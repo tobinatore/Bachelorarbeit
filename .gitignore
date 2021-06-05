@@ -159,3 +159,9 @@ Thumbs.db
 # Ignore all local history of files
 .history
 .ionide
+
+### ION ###
+pyion
+node_list
+setup.txt
+nns.sh
