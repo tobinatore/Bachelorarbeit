@@ -41,12 +41,6 @@ class NodeManager:
     def __init__(self, path: str) -> None:
 
         # Initialize Logger
-        logging.basicConfig(
-            filename="framework.log",
-            level=logging.INFO,
-            format="%(asctime)s %(name)s:%(levelname)s: %(message)s",
-            datefmt="[%Y-%m-%d %H:%M:%S]",
-        )
         self.__logger = logging.getLogger(__name__)
 
         config = configparser.ConfigParser()
