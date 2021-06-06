@@ -38,7 +38,7 @@ class NodeManager:
     # ------------------------
     # |    INITIALIZATION    |
     # ------------------------
-    def __init__(self) -> None:
+    def __init__(self, path: str) -> None:
 
         # Initialize Logger
         logging.basicConfig(
@@ -50,7 +50,7 @@ class NodeManager:
         self.__logger = logging.getLogger(__name__)
 
         config = configparser.ConfigParser()
-        config.read("config.ini")
+        config.read(path)
 
         # Configuring the node
         self.__logger.info("Getting node config")
