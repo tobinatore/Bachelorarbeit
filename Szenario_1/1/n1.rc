@@ -166,7 +166,7 @@ a protocol udp 1400 100
  
 a induct udp 0.0.0.0:4556 udpcli
 a outduct udp 127.0.0.1:4556 'udpclo 2'
-a outduct udp 10.0.0.2:4556 'udpclo 2'
+a outduct udp 10.0.0.2:4555 'udpclo 2'
  
 w 1
  
@@ -175,5 +175,5 @@ s
  
 ## begin ipnadmin
 a plan 1 udp/127.0.0.1:4556
-a plan 2 udp/10.0.0.2:4556
+a plan 2 udp/10.0.0.2:4555
 ## end ipnadmin
