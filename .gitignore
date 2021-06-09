@@ -163,6 +163,7 @@ Thumbs.db
 ### ION ###
 pyion
 node_list
+/Szenario_1/ion_nodes
 setup.txt
 nns.sh
 .vscode/settings.json
