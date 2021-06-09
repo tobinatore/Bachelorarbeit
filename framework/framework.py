@@ -31,16 +31,6 @@ def init_argparse() -> argparse.ArgumentParser:
     return parser
 
 
-def bundle_received(nm: NodeManager, nbr: str, sock: socket) -> None:
-    """Processes incoming bundles.
-
-    Args:
-        nbr (str): Node number / name of the sender.
-    """
-    if nm.is_neighbour(nbr):
-        nm.count_rcvd_bundles(nbr)
-
-
 def reset_bundle_counts(nm: NodeManager) -> None:
     """Instructs NodeManager to reset the counts of the Bundles which were received in the last
     interval.
@@ -51,8 +41,8 @@ def reset_bundle_counts(nm: NodeManager) -> None:
     nm.reset_rcvd_bundles()
 
 
-def listen() -> None:
-    print("Listening for incoming bundles.")
+def listen(nm: NodeManager) -> None:
+    print("Listening for incoming bundles on node " + nm.get_node_number() + ":")
 
     # Create a socket for incoming traffic
     global f_socket
@@ -62,12 +52,17 @@ def listen() -> None:
     while True:
         message, addr = f_socket.recvfrom(2048)
         sender = util.utils.get_bundle_source(message)
+        print("Received Bundle from node " + sender)
         logger.info("Captured bundle coming from node " + sender)
 
         # Forward bundle to the port ION uses
         # -> TODO: Trust check to see if it should be
         # discarded instead
-        f_socket.sendto(message, ("127.0.0.1", 4556))
+        if nm.is_neighbour(sender):
+            if nm.can_accept_bundle(sender):
+                f_socket.sendto(message, ("127.0.0.1", 4556))
+        else:
+            f_socket.sendto(message, ("127.0.0.1", 4556))
 
 
 def main(nm: NodeManager) -> None:
@@ -79,7 +74,7 @@ def main(nm: NodeManager) -> None:
 
     # Create a thread for listening to incoming messages
     logger.info("Starting thread listening for incoming messages")
-    l = threading.Thread(target=listen)
+    l = threading.Thread(target=listen, args=[nm])
     l.daemon = True
     l.start()
 

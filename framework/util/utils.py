@@ -14,4 +14,4 @@ def get_bundle_source(recvd_message: bytes) -> str:
     # Decoding the byte-representation and accessing the node number of the sender.
     # see https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bpbis-31#section-4.3.1
     # for the structure of the primary bundle block.
-    return loads(recvd_message)[0][4][1][0]
+    return str(loads(recvd_message)[0][4][1][0])

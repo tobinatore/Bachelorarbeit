@@ -1,7 +1,12 @@
-import pyion
 import configparser
 import logging
+import math
+import os
+import subprocess
+import time
 from typing import Dict, List
+
+import pyion
 
 
 class NodeManager:
@@ -22,7 +27,7 @@ class NodeManager:
     __eid_recv: str
     __is_flooder: bool
     __neighbours: List[str]
-    __ion_proxy: any
+    __node_dir: str
 
     # ------------------------
     # |      TRUST VARS      |
@@ -51,9 +56,10 @@ class NodeManager:
         self.__node_num = config["NODE_CONFIG"]["node_number"]
         self.__eid_send = config["NODE_CONFIG"]["eid_send"]
         self.__eid_recv = config["NODE_CONFIG"]["eid_receive"]
+        self.__sdr_name = config["NODE_CONFIG"]["sdr_name"]
         self.__is_flooder = config.getboolean("NODE_CONFIG", "is_flooder")
         self.__neighbours = config["NODE_CONFIG"]["neighbours"].split(",")
-        # self.__ion_proxy = pyion.get_bp_proxy(self.__node_num)
+        self.__node_dir = config["NODE_CONFIG"]["node_dir"]
 
         # Logging results
         self.__logger.info("Node number: " + str(self.__node_num))
@@ -83,7 +89,7 @@ class NodeManager:
         self.__trust_recovery_rate = float(
             config["TRUST_CONFIG"]["trust_recovery_rate"]
         )
-        self.__trust_scores = {node: 10 for node in self.__neighbours}
+        self.__trust_scores = {node: 10.0 for node in self.__neighbours}
         self.__reset_interval = int(config["TRUST_CONFIG"]["reset_interval"])
         self.__bundles_last_interval = {node: 0 for node in self.__neighbours}
 
@@ -146,7 +152,7 @@ class NodeManager:
     def get_node_number(self) -> str:
         return self.__node_num
 
-    def get_proxy(self) -> object:
+    def get_ion_proxy(self) -> object:
         return self.__ion_proxy
 
     def get_neighbours(self) -> List[str]:
@@ -159,16 +165,84 @@ class NodeManager:
             node_nbr (str): Node number / name of the node to check.
 
         Returns:
-            bool: True if th node is a neighbour, false else.
+            bool: True if the node is a neighbour, False else.
         """
 
         return node_nbr in self.__neighbours
 
     def get_trust_scores(self) -> Dict[str, float]:
+        """Returns a dict containing the trust scores for all
+        neighbouring nodes.
+
+        Returns:
+            Dict[str, float]: Dict in the format {node:trust_score,...}
+        """
         return self.__trust_scores
 
     def get_reset_time(self) -> int:
+        """Returns the reset interval as specified in the
+        configuration file.
+
+        Returns:
+            int: The reset interval in seconds
+        """
         return self.__reset_interval
 
     def update_trust_scores(self, new_scores: Dict[str, float]) -> None:
+        """Sets the trust scores to the supplied values.
+
+        Args:
+            new_scores (Dict[str, float]): A dict containing the new scores.
+        """
         self.__trust_scores = new_scores
+
+    def can_accept_bundle(self, node: str) -> bool:
+        """Compares memory usage with the cutoff value
+        defined by the senders current trust score and decides
+        whether to accept or decline the bundle.
+
+        Args:
+            node (str): The node number of the sender
+
+        Returns:
+            bool: Decision on whether to accept or decline the bundle.
+                    True if bundle gets accepted
+                    False else
+        """
+
+        # rounding down to
+        current_trust = self.__trust_scores[node]
+
+        # find cutoff by evaluating all key of the dict
+        # and choosing the one closest (but still less than)
+        # or equal to current_trust
+        # Snippet adapted from https://stackoverflow.com/a/37851350
+        cutoff = self.__memory_limits[
+            max(
+                key
+                for key in map(int, self.__memory_limits.keys())
+                if key <= current_trust
+            )
+        ]
+        nn = self.__node_num
+
+        # change directories to the node's directory
+        # so the SDR can be queried
+        os.chdir(self.__node_dir)
+
+        # Query ION's SDR memory
+        process = subprocess.run(
+            ["ip netns exec nns" + nn + " sdrwatch n" + nn],
+            capture_output=True,
+            shell=True,
+        )
+        stdout = process.stdout
+        stdout = stdout.decode("utf-8").split("\n")
+
+        # sdrwatch returns a string in the format "total heap:              40000"
+        # -> the number needs to be extracted
+        total = [int(n) for n in stdout[12].split() if n.isdigit()][0]
+        used = [int(n) for n in stdout[15].split() if n.isdigit()][0]
+        percentage = float(used) / total
+
+        return True if percentage > cutoff else False
