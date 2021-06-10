@@ -7,6 +7,7 @@ import time
 from typing import Dict, List
 
 import pyion
+import util.utils
 
 
 class NodeManager:
@@ -137,8 +138,9 @@ class NodeManager:
         Returns:
             int: The number of bundles exceeding __threshold_flooding.
         """
+        # print(self.__bundles_last_interval[node_nbr])
         self.__bundles_last_interval[node_nbr] += no_bundles
-
+        # print(self.__bundles_last_interval[node_nbr])
         return (
             0
             if self.__bundles_last_interval[node_nbr] <= self.__threshold_flooding
@@ -238,11 +240,30 @@ class NodeManager:
         )
         stdout = process.stdout
         stdout = stdout.decode("utf-8").split("\n")
+        for string in stdout:
+            if "total now in use" in string:
+                used = string
+            elif "total heap size" in string:
+                total = string
 
         # sdrwatch returns a string in the format "total heap:              40000"
         # -> the number needs to be extracted
-        total = [int(n) for n in stdout[12].split() if n.isdigit()][0]
-        used = [int(n) for n in stdout[15].split() if n.isdigit()][0]
-        percentage = float(used) / total
+        total = [int(n) for n in total.split() if n.isdigit()][0]
+        used = [int(n) for n in used.split() if n.isdigit()][0]
+        percentage = (float(used) / total) * 100
 
-        return True if percentage > cutoff else False
+        return True if percentage < cutoff else False
+
+    def reset_time_reached(self) -> None:
+        """The specified time has elapsed, calculates new trust scores
+        and resets bundle counts.
+        """
+        util.utils.calc_penalty(
+            self,
+            self.__bundles_last_interval,
+            self.__trust_scores,
+            self.__threshold_flooding,
+            self.__penalty_growth_rate,
+            self.__trust_recovery_rate,
+        )
+        self.reset_rcvd_bundles()
