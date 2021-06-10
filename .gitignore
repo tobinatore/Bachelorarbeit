@@ -167,4 +167,5 @@ node_list
 setup.txt
 nns.sh
 .vscode/settings.json
-/Szenario1/*/*.sdr
+*.sdr
+

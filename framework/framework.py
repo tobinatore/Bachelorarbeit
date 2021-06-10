@@ -6,7 +6,7 @@ import sys
 import threading
 import time
 import signal
-from util.WorkerManager import WorkerManager
+from util.workermanager import WorkerManager
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -40,6 +40,7 @@ def interval_reset(nm: NodeManager) -> None:
         nm (NodeManager): Management utility of the node for which the counts should be reset.
     """
     print("RESET")
+    nm.reset_flag = True
     nm.reset_time_reached()
 
 
@@ -53,7 +54,7 @@ def listen(nm: NodeManager, wm: WorkerManager) -> None:
 
     while True:
         message, addr = f_socket.recvfrom(196)
-        wm.add_bundle(message)
+        threading.Thread(target=wm.add_bundle, args=[message]).start()
 
         # sender = util.utils.get_bundle_source(message)
         # print("Received Bundle from node " + sender)
@@ -153,5 +154,5 @@ if __name__ == "__main__":
             exit(1)
 
     logger.info("Entering main event loop.")
-    wm = WorkerManager(nm, 15)
+    wm = WorkerManager(nm, 25)
     main(nm, wm)

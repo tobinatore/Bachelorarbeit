@@ -40,6 +40,7 @@ class NodeManager:
     __trust_scores: Dict[str, float]
     __reset_interval: int
     __bundles_last_interval: Dict[str, int]
+    reset_flag: bool
 
     # ------------------------
     # |    INITIALIZATION    |
@@ -93,6 +94,7 @@ class NodeManager:
         self.__trust_scores = {node: 10.0 for node in self.__neighbours}
         self.__reset_interval = int(config["TRUST_CONFIG"]["reset_interval"])
         self.__bundles_last_interval = {node: 0 for node in self.__neighbours}
+        self.reset_flag = False
 
         # Logging the results
         self.__logger.info(
@@ -139,7 +141,11 @@ class NodeManager:
             int: The number of bundles exceeding __threshold_flooding.
         """
         # print(self.__bundles_last_interval[node_nbr])
-        self.__bundles_last_interval[node_nbr] += no_bundles
+        if self.reset_flag:
+            self.__bundles_last_interval[node_nbr] = no_bundles
+            self.reset_flag = False
+        else:
+            self.__bundles_last_interval[node_nbr] += no_bundles
         # print(self.__bundles_last_interval[node_nbr])
         return (
             0
@@ -266,4 +272,4 @@ class NodeManager:
             self.__penalty_growth_rate,
             self.__trust_recovery_rate,
         )
-        self.reset_rcvd_bundles()
+        # self.reset_rcvd_bundles()
