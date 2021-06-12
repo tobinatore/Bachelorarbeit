@@ -20,7 +20,19 @@ f_socket: socket.socket
 scheduler: BackgroundScheduler
 
 
-def get_ip_addresses(family):
+def get_ip_addresses(family: socket.AddressFamily):
+    """Returns all network interfaces and their assigned IP addresses.
+
+    Args:
+        family (socket.AddressFamily): AF_INET for IPv4, AF_INET6 for IPv6 addresses.
+
+    Yields:
+        List[Tuple(str,str)]: A list of all interfaces and their assigned IP addresses
+    """
+
+    # This snippet was written by StackOverflow user pmav99
+    # Link to answer: https://stackoverflow.com/a/43478599
+
     for interface, snics in psutil.net_if_addrs().items():
         for snic in snics:
             if snic.family == family:
