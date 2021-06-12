@@ -1,6 +1,6 @@
 wmKey 7
 sdrName n7
-wmSize 5000000
+wmSize 64000
 configFlags 15
-heapWords 5000000
+heapWords 190624
 pathName /home/tobias/Desktop/Bachelorarbeit/Szenario_1/7
