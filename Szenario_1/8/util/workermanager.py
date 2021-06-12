@@ -62,7 +62,7 @@ class WorkerManager:
                     sock.sendto(bundle, ("127.0.0.1", 4556))
                     self.__socket_queue.put(sock)
             else:
-                time.sleep(1)
+                time.sleep(0.1)
 
     def add_bundle(self, bundle: bytes) -> None:
         self.bundle_queue.put(bundle)

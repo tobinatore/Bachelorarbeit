@@ -28,10 +28,8 @@ class NodeManager:
     __eid_send: str
     __eid_recv: str
     __is_flooder: bool
-    __target: str or None
     __neighbours: List[str]
     __node_dir: str
-    __ion_proxy: object
 
     # ------------------------
     # |      TRUST VARS      |
@@ -62,11 +60,8 @@ class NodeManager:
         self.__eid_send = config["NODE_CONFIG"]["eid_send"]
         self.__eid_recv = config["NODE_CONFIG"]["eid_receive"]
         self.__is_flooder = config.getboolean("NODE_CONFIG", "is_flooder")
-        if self.__is_flooder:
-            self.__target = config["NODE_CONFIG"]["target"]
         self.__neighbours = config["NODE_CONFIG"]["neighbours"].split(",")
         self.__node_dir = config["NODE_CONFIG"]["node_dir"]
-        self.__ion_proxy = pyion.get_bp_proxy(self.__node_num)
 
         # Logging results
         self.__logger.info("Node number: " + str(self.__node_num))
@@ -134,21 +129,6 @@ class NodeManager:
             + " seconds: "
             + str(self.__bundles_last_interval)
         )
-
-        if self.__is_flooder:
-            attack_thread = threading.Thread(target=self.__attack_node)
-            attack_thread.daemon = True
-            attack_thread.start()
-
-    def __attack_node(self) -> None:
-        time.sleep(5)
-        self.__ion_proxy = pyion.get_bp_proxy(self.__node_num)
-        self.__ion_proxy.bp_attach()
-
-        with self.__ion_proxy.bp_open(self.__eid_send) as eid:
-            while True:
-                eid.bp_send("ipn:" + self.__target + ".2", b"SPAM")
-                time.sleep(0.01)
 
     def count_recvd_bundle(self, node_nbr: str, no_bundles: int = 1) -> int:
         """Updates the __bundles_last_interval variable by adding the number of bundles which were newly received.
@@ -302,6 +282,3 @@ class NodeManager:
             self.__penalty_growth_rate,
             self.__trust_recovery_rate,
         )
-
-    def shutdown(self) -> None:
-        self.__ion_proxy.bp_close_all()

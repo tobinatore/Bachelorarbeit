@@ -7,7 +7,7 @@ import threading
 import time
 import signal
 from util.workermanager import WorkerManager
-
+import psutil
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
@@ -18,6 +18,13 @@ from util.nodemanager import NodeManager
 logger = logging.getLogger(__name__)
 f_socket: socket.socket
 scheduler: BackgroundScheduler
+
+
+def get_ip_addresses(family):
+    for interface, snics in psutil.net_if_addrs().items():
+        for snic in snics:
+            if snic.family == family:
+                yield (interface, snic.address)
 
 
 def init_argparse() -> argparse.ArgumentParser:
@@ -44,17 +51,35 @@ def interval_reset(nm: NodeManager) -> None:
     nm.reset_time_reached()
 
 
+def wait_for_message(sock: socket.socket, wm: WorkerManager):
+    while True:
+        message, addr = sock.recvfrom(196)
+        threading.Thread(target=wm.add_bundle, args=[message]).start()
+
+
 def listen(nm: NodeManager, wm: WorkerManager) -> None:
     print("Listening for incoming bundles on node " + nm.get_node_number() + ":")
 
-    # Create a socket for incoming traffic
-    global f_socket
-    f_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    f_socket.bind(("", 4555))
+    ip_list = get_ip_addresses(socket.AF_INET)
+    global sockets
+    sockets = []
 
-    while True:
-        message, addr = f_socket.recvfrom(196)
-        threading.Thread(target=wm.add_bundle, args=[message]).start()
+    for address in ip_list:
+        if not address[0] == "lo":
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.bind((address[1], 4555))
+            print("Bound Socket to interface " + address[0] + ", IP: " + address[1])
+            threading.Thread(target=wait_for_message, args=[sock, wm]).start()
+            sockets.append(sock)
+
+    # Create a socket for incoming traffic
+    # global f_socket
+    # f_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # f_socket.bind(("", 4555))
+
+    # while True:
+    #    message, addr = f_socket.recvfrom(196)
+    #    threading.Thread(target=wm.add_bundle, args=[message]).start()
 
 
 def main(nm: NodeManager, wm: WorkerManager) -> None:
@@ -87,10 +112,13 @@ def cleanup() -> None:
     the scheduler on SIGINT.
     """
     global f_socket
+    global sockets
     global scheduler
 
     logger.info("---------Shutting down----------")
     f_socket.close()
+    for sock in sockets:
+        sock.close()
     logger.info("Closed socket")
     scheduler.shutdown()
     logger.info("Shut down scheduler")
@@ -138,5 +166,5 @@ if __name__ == "__main__":
             exit(1)
 
     logger.info("Entering main event loop.")
-    wm = WorkerManager(nm, 25)
+    wm = WorkerManager(nm, 10)
     main(nm, wm)

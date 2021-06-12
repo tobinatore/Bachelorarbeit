@@ -5,5 +5,5 @@ do
     cd "./$i/"
     ip netns exec nns$i ionstart -I n"$i".rc &
     cd ..
-    sleep 10
+    sleep 0.1
 done
