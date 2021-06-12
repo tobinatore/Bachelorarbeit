@@ -140,13 +140,11 @@ class NodeManager:
         Returns:
             int: The number of bundles exceeding __threshold_flooding.
         """
-        # print(self.__bundles_last_interval[node_nbr])
         if self.reset_flag:
             self.__bundles_last_interval[node_nbr] = no_bundles
             self.reset_flag = False
         else:
             self.__bundles_last_interval[node_nbr] += no_bundles
-        # print(self.__bundles_last_interval[node_nbr])
         return (
             0
             if self.__bundles_last_interval[node_nbr] <= self.__threshold_flooding
@@ -158,12 +156,22 @@ class NodeManager:
         self.__bundles_last_interval = {node: 0 for node in self.__neighbours}
 
     def get_node_number(self) -> str:
+        """Returns own node number
+
+        Returns:
+            str: The node number / name of this node
+        """
         return self.__node_num
 
     def get_ion_proxy(self) -> object:
         return self.__ion_proxy
 
     def get_neighbours(self) -> List[str]:
+        """Returns all neighbours of this node.
+
+        Returns:
+            List[str]: List of neighbours
+        """
         return self.__neighbours
 
     def is_neighbour(self, node_nbr: str) -> bool:
@@ -218,52 +226,54 @@ class NodeManager:
                     False else
         """
 
-        # rounding down to
         current_trust = self.__trust_scores[node]
 
-        # find cutoff by evaluating all key of the dict
-        # and choosing the one closest (but still less than)
-        # or equal to current_trust
-        # Snippet adapted from https://stackoverflow.com/a/37851350
-        cutoff = self.__memory_limits[
-            max(
-                key
-                for key in map(int, self.__memory_limits.keys())
-                if key <= current_trust
+        if current_trust > 0:
+            # find cutoff by evaluating all key of the dict
+            # and choosing the one closest (but still less than)
+            # or equal to current_trust
+            # Snippet adapted from https://stackoverflow.com/a/37851350
+            cutoff = self.__memory_limits[
+                max(
+                    key
+                    for key in map(int, self.__memory_limits.keys())
+                    if key <= current_trust
+                )
+            ]
+            nn = self.__node_num
+
+            # change directories to the node's directory
+            # so the SDR can be queried
+            os.chdir(self.__node_dir)
+
+            # Query ION's SDR memory
+            process = subprocess.run(
+                ["ip netns exec nns" + nn + " sdrwatch n" + nn],
+                capture_output=True,
+                shell=True,
             )
-        ]
-        nn = self.__node_num
+            stdout = process.stdout
+            stdout = stdout.decode("utf-8").split("\n")
+            for string in stdout:
+                if "total now in use" in string:
+                    used = string
+                elif "total heap size" in string:
+                    total = string
 
-        # change directories to the node's directory
-        # so the SDR can be queried
-        os.chdir(self.__node_dir)
+            # sdrwatch returns a string in the format "total heap:              40000"
+            # -> the number needs to be extracted
+            total = [int(n) for n in total.split() if n.isdigit()][0]
+            used = [int(n) for n in used.split() if n.isdigit()][0]
+            percentage = (float(used) / total) * 100
 
-        # Query ION's SDR memory
-        process = subprocess.run(
-            ["ip netns exec nns" + nn + " sdrwatch n" + nn],
-            capture_output=True,
-            shell=True,
-        )
-        stdout = process.stdout
-        stdout = stdout.decode("utf-8").split("\n")
-        for string in stdout:
-            if "total now in use" in string:
-                used = string
-            elif "total heap size" in string:
-                total = string
-
-        # sdrwatch returns a string in the format "total heap:              40000"
-        # -> the number needs to be extracted
-        total = [int(n) for n in total.split() if n.isdigit()][0]
-        used = [int(n) for n in used.split() if n.isdigit()][0]
-        percentage = (float(used) / total) * 100
-
-        return True if percentage < cutoff else False
+            return True if percentage < cutoff else False
+        else:
+            # the sender has a trust score of 0
+            # -> do not accept any of its bundles
+            return False
 
     def reset_time_reached(self) -> None:
-        """The specified time has elapsed, calculates new trust scores
-        and resets bundle counts.
-        """
+        """The specified time has elapsed, calculates new trust scores."""
         util.utils.calc_penalty(
             self,
             self.__bundles_last_interval,
@@ -272,4 +282,3 @@ class NodeManager:
             self.__penalty_growth_rate,
             self.__trust_recovery_rate,
         )
-        # self.reset_rcvd_bundles()

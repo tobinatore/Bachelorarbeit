@@ -7,7 +7,6 @@ import threading
 import time
 
 logger = logging.getLogger(__name__)
-bundle_queue = queue.Queue()
 
 
 def get_bundle_source(recvd_message: bytes) -> str:
@@ -53,7 +52,7 @@ def calc_penalty(
                 (scores[node] - (((value - threshold) ** factor) * 0.1)), 0
             )
             logger.info("NEW SCORE NODE " + node + ": " + str(scores[node]))
-        elif scores[node] < 10:
+        elif scores[node] < 10 and scores[node] > 0:
             scores[node] += rec_rate
     logger.info("Scores node " + nm.get_node_number() + ": " + str(scores))
     nm.update_trust_scores(scores)

@@ -50,13 +50,13 @@ class WorkerManager:
             if not self.bundle_queue.empty():
                 bundle = self.bundle_queue.get()
                 sender = utils.get_bundle_source(bundle)
-                # print(sender)
+                print("RECEIVED BUNDLE FROM NODE: " + sender)
                 if self.__node_manager.is_neighbour(sender):
                     self.__node_manager.count_recvd_bundle(sender)
-                    # if self.__node_manager.can_accept_bundle(sender):
-                    sock = self.__socket_queue.get()
-                    sock.sendto(bundle, ("127.0.0.1", 4556))
-                    self.__socket_queue.put(sock)
+                    if self.__node_manager.can_accept_bundle(sender):
+                        sock = self.__socket_queue.get()
+                        sock.sendto(bundle, ("127.0.0.1", 4556))
+                        self.__socket_queue.put(sock)
                 else:
                     sock = self.__socket_queue.get()
                     sock.sendto(bundle, ("127.0.0.1", 4556))

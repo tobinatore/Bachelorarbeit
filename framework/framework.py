@@ -39,7 +39,7 @@ def interval_reset(nm: NodeManager) -> None:
     Args:
         nm (NodeManager): Management utility of the node for which the counts should be reset.
     """
-    print("RESET")
+    #print("RESET")
     nm.reset_flag = True
     nm.reset_time_reached()
 
