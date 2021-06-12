@@ -56,6 +56,22 @@ def listen(nm: NodeManager, wm: WorkerManager) -> None:
         message, addr = f_socket.recvfrom(196)
         threading.Thread(target=wm.add_bundle, args=[message]).start()
 
+        # sender = util.utils.get_bundle_source(message)
+        # print("Received Bundle from node " + sender)
+        # logger.info("Captured bundle coming from node " + sender)
+
+        # Forward bundle to the port ION uses
+        # -> TODO: Trust check to see if it should be
+        # discarded instead
+        # if nm.is_neighbour(sender):
+        # if nm.can_accept_bundle(sender):
+        #    print(nm.count_recvd_bundle(sender))
+        #    f_socket.sendto(message, ("127.0.0.1", 4556))
+        #    nm.count_recvd_bundle(sender)
+        #    f_socket.sendto(message, ("127.0.0.1", 4556))
+        # else:
+        #    f_socket.sendto(message, ("127.0.0.1", 4556))
+
 
 def main(nm: NodeManager, wm: WorkerManager) -> None:
     """Main event loop.
@@ -94,6 +110,8 @@ def cleanup() -> None:
     logger.info("Closed socket")
     scheduler.shutdown()
     logger.info("Shut down scheduler")
+    nm.shutdown()
+    logger.info("Shut down node manager")
 
 
 def signal_handler(signum, frame) -> None:
