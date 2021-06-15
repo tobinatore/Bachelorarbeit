@@ -170,6 +170,7 @@ a outduct udp 10.0.8.1:4556 'udpclo 2'
  
 w 1
  
+
 s
 ## end bpadmin
  

@@ -32,7 +32,6 @@ def get_ip_addresses(family: socket.AddressFamily):
 
     # This snippet was written by StackOverflow user pmav99
     # Link to answer: https://stackoverflow.com/a/43478599
-
     for interface, snics in psutil.net_if_addrs().items():
         for snic in snics:
             if snic.family == family:
@@ -58,7 +57,7 @@ def interval_reset(nm: NodeManager) -> None:
     Args:
         nm (NodeManager): Management utility of the node for which the counts should be reset.
     """
-    # print("RESET")
+    print("RESET")
     nm.reset_flag = True
     nm.reset_time_reached()
 
@@ -84,15 +83,6 @@ def listen(nm: NodeManager, wm: WorkerManager) -> None:
             threading.Thread(target=wait_for_message, args=[sock, wm]).start()
             sockets.append(sock)
 
-    # Create a socket for incoming traffic
-    # global f_socket
-    # f_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    # f_socket.bind(("", 4555))
-
-    # while True:
-    #    message, addr = f_socket.recvfrom(196)
-    #    threading.Thread(target=wm.add_bundle, args=[message]).start()
-
 
 def main(nm: NodeManager, wm: WorkerManager) -> None:
     """Main event loop.
@@ -100,6 +90,7 @@ def main(nm: NodeManager, wm: WorkerManager) -> None:
     Args:
         nm (NodeManager): [description]
     """
+
     wm.start_workers()
     # Create a thread for listening to incoming messages
     logger.info("Starting thread listening for incoming messages")
@@ -116,22 +107,23 @@ def main(nm: NodeManager, wm: WorkerManager) -> None:
     )
     scheduler.start()
     logging.getLogger("apscheduler").setLevel(logging.WARNING)
-    time.sleep(1000)
+
+    while True:
+        time.sleep(100)
 
 
 def cleanup() -> None:
     """Closes the socket and shuts down
     the scheduler on SIGINT.
     """
-    global f_socket
+
     global sockets
     global scheduler
 
     logger.info("---------Shutting down----------")
-    f_socket.close()
     for sock in sockets:
         sock.close()
-    logger.info("Closed socket")
+    logger.info("Closed sockets")
     scheduler.shutdown()
     logger.info("Shut down scheduler")
 
@@ -178,5 +170,5 @@ if __name__ == "__main__":
             exit(1)
 
     logger.info("Entering main event loop.")
-    wm = WorkerManager(nm, 10)
+    wm = WorkerManager(nm, 25)
     main(nm, wm)

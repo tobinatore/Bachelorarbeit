@@ -54,5 +54,8 @@ def calc_penalty(
             logger.info("NEW SCORE NODE " + node + ": " + str(scores[node]))
         elif scores[node] < 10 and scores[node] > 0:
             scores[node] += rec_rate
+
+        if scores[node] > 10:
+            scores[node] = 10
     logger.info("Scores node " + nm.get_node_number() + ": " + str(scores))
     nm.update_trust_scores(scores)

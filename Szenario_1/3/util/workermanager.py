@@ -31,6 +31,7 @@ class WorkerManager:
 
         for i in range(worker_pool):
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(0.050)
             sock.bind(("", 4554 - i))
             self.__socket_queue.put(sock)
 
@@ -44,10 +45,12 @@ class WorkerManager:
     def __work(self) -> None:
         """Takes bundles from the bundle queue,
         parses the source and checks whether the
-        bundle shoudl be accepted.
+        bundle should be accepted.
         """
+        tmax = 0
         while True:
             if not self.bundle_queue.empty():
+                s = time.time()
                 bundle = self.bundle_queue.get()
                 sender = utils.get_bundle_source(bundle)
                 print("RECEIVED BUNDLE FROM NODE: " + sender)
@@ -57,12 +60,18 @@ class WorkerManager:
                         sock = self.__socket_queue.get()
                         sock.sendto(bundle, ("127.0.0.1", 4556))
                         self.__socket_queue.put(sock)
+                        print("TIME NEEDED: " + str(time.time() - s))
+                    else:
+                        print("NOT FORWARDING BUNDLE FROM NODE " + sender)
                 else:
+
                     sock = self.__socket_queue.get()
                     sock.sendto(bundle, ("127.0.0.1", 4556))
                     self.__socket_queue.put(sock)
+                    print("TIME NEEDED (NOT NEIGHBOUR): " + str(time.time() - s))
+
             else:
-                time.sleep(0.1)
+                time.sleep(0.001)
 
     def add_bundle(self, bundle: bytes) -> None:
         self.bundle_queue.put(bundle)

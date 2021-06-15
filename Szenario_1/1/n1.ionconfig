@@ -1,6 +1,6 @@
 wmKey 1
 sdrName n1
 wmSize 5000000
-configFlags 15
-heapWords 190624
+configFlags 9
+heapWords 5000000
 pathName /home/tobias/Desktop/Bachelorarbeit/Szenario_1/1
