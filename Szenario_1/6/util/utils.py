@@ -46,7 +46,7 @@ def calc_penalty(
     """
     for node in bundles:
         value = bundles[node]
-        logger.info("Accepted bundles from node " + str(node) + ": " + str(value))
+        logger.info("Bundles from node " + str(node) + ": " + str(value))
         if value > threshold:
             scores[node] = max(
                 (scores[node] - (((value - threshold) ** factor) * 0.1)), 0
@@ -54,5 +54,7 @@ def calc_penalty(
             logger.info("NEW SCORE NODE " + node + ": " + str(scores[node]))
         elif scores[node] < 10 and scores[node] > 0:
             scores[node] += rec_rate
-    logger.info("Scores node " + nm.get_node_number() + ": " + str(scores))
+
+        if scores[node] > 10:
+            scores[node] = 10
     nm.update_trust_scores(scores)

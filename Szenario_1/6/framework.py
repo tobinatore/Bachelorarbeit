@@ -62,10 +62,11 @@ def interval_reset(nm: NodeManager) -> None:
     nm.reset_time_reached()
 
 
-def wait_for_message(sock: socket.socket, wm: WorkerManager):
+def wait_for_message(sock: socket.socket, wm: WorkerManager, nm: NodeManager):
     while True:
         message, addr = sock.recvfrom(196)
-        threading.Thread(target=wm.add_bundle, args=[message]).start()
+        if not util.utils.get_bundle_source(message) in nm.get_banned_nodes():
+            threading.Thread(target=wm.add_bundle, args=[message]).start()
 
 
 def listen(nm: NodeManager, wm: WorkerManager) -> None:
@@ -80,7 +81,7 @@ def listen(nm: NodeManager, wm: WorkerManager) -> None:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.bind((address[1], 4555))
             print("Bound Socket to interface " + address[0] + ", IP: " + address[1])
-            threading.Thread(target=wait_for_message, args=[sock, wm]).start()
+            threading.Thread(target=wait_for_message, args=[sock, wm, nm]).start()
             sockets.append(sock)
 
 

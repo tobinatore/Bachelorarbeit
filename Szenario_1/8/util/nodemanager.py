@@ -4,7 +4,7 @@ import math
 import os
 import subprocess
 import time
-from typing import Dict, List
+from typing import Dict, List, Set
 import threading
 
 import pyion
@@ -42,6 +42,8 @@ class NodeManager:
     __reset_interval: int
     __bundles_last_interval: Dict[str, int]
     reset_flag: bool
+    __mem_percentage: float
+    __banned_nodes: Set[str]
 
     # ------------------------
     # |    INITIALIZATION    |
@@ -95,6 +97,8 @@ class NodeManager:
         self.__reset_interval = int(config["TRUST_CONFIG"]["reset_interval"])
         self.__bundles_last_interval = {node: 0 for node in self.__neighbours}
         self.reset_flag = False
+        self.__mem_percentage = 0.0
+        self.__banned_nodes = set()
 
         # Logging the results
         self.__logger.info(
@@ -211,6 +215,7 @@ class NodeManager:
             new_scores (Dict[str, float]): A dict containing the new scores.
         """
         self.__trust_scores = new_scores
+        self.__logger.info("New Trust Scores:" + str(self.__trust_scores))
 
     def can_accept_bundle(self, node: str) -> bool:
         """Compares memory usage with the cutoff value
@@ -227,7 +232,7 @@ class NodeManager:
         """
 
         current_trust = self.__trust_scores[node]
-
+        self.__logger.info("TRUST FOR NODE " + node + ": " + str(current_trust))
         if current_trust > 0:
             # find cutoff by evaluating all key of the dict
             # and choosing the one closest (but still less than)
@@ -240,36 +245,13 @@ class NodeManager:
                     if key <= current_trust
                 )
             ]
-            nn = self.__node_num
 
-            # change directories to the node's directory
-            # so the SDR can be queried
-            os.chdir(self.__node_dir)
-
-            # Query ION's SDR memory
-            process = subprocess.run(
-                ["ip netns exec nns" + nn + " sdrwatch n" + nn],
-                capture_output=True,
-                shell=True,
-            )
-            stdout = process.stdout
-            stdout = stdout.decode("utf-8").split("\n")
-            for string in stdout:
-                if "total now in use" in string:
-                    used = string
-                elif "total heap size" in string:
-                    total = string
-
-            # sdrwatch returns a string in the format "total heap:              40000"
-            # -> the number needs to be extracted
-            total = [int(n) for n in total.split() if n.isdigit()][0]
-            used = [int(n) for n in used.split() if n.isdigit()][0]
-            percentage = (float(used) / total) * 100
-
-            return True if percentage < cutoff else False
+            return True if self.__mem_percentage < cutoff else False
         else:
             # the sender has a trust score of 0
             # -> do not accept any of its bundles
+            self.__logger.info("NOT ACCEPTING BUNDLE")
+            self.__banned_nodes.add(node)
             return False
 
     def reset_time_reached(self) -> None:
@@ -282,3 +264,41 @@ class NodeManager:
             self.__penalty_growth_rate,
             self.__trust_recovery_rate,
         )
+        self.__mem_percentage = self.calc_memory_percentage()
+
+    def calc_memory_percentage(self) -> float:
+        """Calculates the percentage of unavailable memory space.
+
+        Returns:
+            float: Percentage of memory used
+        """
+        nn = self.__node_num
+
+        # change directories to the node's directory
+        # so the SDR can be queried
+        os.chdir(self.__node_dir)
+
+        # Query ION's SDR memory
+        process = subprocess.run(
+            ["ip netns exec nns" + nn + " sdrwatch n" + nn],
+            capture_output=True,
+            shell=True,
+        )
+        stdout = process.stdout
+        stdout = stdout.decode("utf-8").split("\n")
+        for string in stdout:
+            if "total now in use" in string:
+                used = string
+            elif "total heap size" in string:
+                total = string
+
+        # sdrwatch returns a string in the format "total heap:              40000"
+        # -> the number needs to be extracted
+        total = [int(n) for n in total.split() if n.isdigit()][0]
+        used = [int(n) for n in used.split() if n.isdigit()][0]
+        perc = (float(used) / total) * 100
+        self.__logger.info("Memory in use:" + str(perc))
+        return perc
+
+    def get_banned_nodes(self) -> List[str]:
+        return self.__banned_nodes
