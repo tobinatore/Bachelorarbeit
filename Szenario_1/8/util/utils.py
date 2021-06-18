@@ -18,11 +18,24 @@ def get_bundle_source(recvd_message: bytes) -> str:
     Returns:
         str: The node number / name of the bundles origin.
     """
-
+    sender = None
     # Decoding the byte-representation and accessing the node number of the sender.
     # see https://datatracker.ietf.org/doc/html/draft-ietf-dtn-bpbis-31#section-4.3.1
     # for the structure of the primary bundle block.
-    return str(loads(recvd_message)[0][4][1][0])
+    try:
+        sender = str(loads(recvd_message)[0][4][1][0])
+    except Exception:
+        print("Error getting sender")
+
+    # In case there is no sender specified in the bundle,
+    # check if there's a report eid
+    if sender == None:
+        try:
+            sender = str(loads(recvd_message)[0][5][1][0])
+        except Exception:
+            print("Error getting report eid")
+
+    return sender
 
 
 def calc_penalty(
