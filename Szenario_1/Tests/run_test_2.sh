@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd ..
+
 for i in 2 3 6 7 8
 do
     cd "./$i/"
