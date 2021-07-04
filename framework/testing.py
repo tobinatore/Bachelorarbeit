@@ -33,22 +33,36 @@ def attack_node(target: str, eid_send: str, proxy) -> None:
 
 
 def sim_traffic(eid_send: str, proxy) -> None:
+    i = 0
+    sleeptime = 1
     with proxy.bp_open(eid_send) as eid:
         while True:
-            dest = str(random.randint(1, 9))
-            while dest == "":
-                dest = str(random.randint(1, 9))
+
+            # First 10 destinations:
+            # 7,6,3,8,3,7,8,6,3,8,7
+            if i % 5 == 0:
+                dest = "7"
+            elif i % 3 == 0:
+                dest = "8"
+            elif i % 2 == 0:
+                dest = "3"
+            else:
+                dest = "6"
+
+            i += 1
+
             dest_eid = "ipn:" + dest + ".2"
             eid.bp_send(dest_eid, b"HAM")
-            time.sleep(random.randint(1, 15))
+            time.sleep(sleeptime)
 
 
 if __name__ == "__main__":
 
-    proxy = pyion.get_bp_proxy("N")
+    pyion.ION_NODE_LIST_DIR = "/home/tobias/Desktop/Bachelorarbeit/Szenario_1/ion_nodes"
+    proxy = pyion.get_bp_proxy("2")
     proxy.bp_attach()
 
-    l = threading.Thread(target=listen, args=["X.2", proxy])
+    l = threading.Thread(target=listen, args=["2.2", proxy])
     l.daemon = True
     l.start()
 
@@ -57,4 +71,4 @@ if __name__ == "__main__":
     if is_attacker:
         a = threading.Thread(target=attack_node, args=["ipn:6.2", "8.1", proxy])
     else:
-        t = threading.Thread(target=sim_traffic, args=["X.1", proxy])
+        t = threading.Thread(target=sim_traffic, args=["2.1", proxy])
