@@ -1,3 +1,4 @@
+import os
 import time
 import pyion
 import threading
@@ -27,11 +28,10 @@ def attack(eid_send: str, proxy) -> None:
 
 if __name__ == "__main__":
 
-    pyion.ION_NODE_LIST_DIR = "/home/tobias/Desktop/Bachelorarbeit/Szenario_2/"
+    pyion.ION_NODE_LIST_DIR = os.path.abspath(os.path.join(".", os.pardir))
     proxy = pyion.get_bp_proxy("4")
     proxy.bp_attach()
 
-    # Simulating normal traffic for non-attackers
     t = threading.Thread(target=attack, args=["ipn:4.1", proxy]).start()
 
     t.join()
