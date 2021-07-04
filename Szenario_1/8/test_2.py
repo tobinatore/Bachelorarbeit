@@ -1,3 +1,4 @@
+import os
 import time
 import pyion
 import threading
@@ -36,15 +37,15 @@ def sim_traffic(eid_send: str, proxy) -> None:
 
 if __name__ == "__main__":
 
-    pyion.ION_NODE_LIST_DIR = "/home/tobias/Desktop/Bachelorarbeit/Szenario_1/"
+    pyion.ION_NODE_LIST_DIR = os.path.abspath(os.path.join(".", os.pardir))
     proxy = pyion.get_bp_proxy("8")
     proxy.bp_attach()
 
-    l = threading.Thread(target=listen, args=["8.2", proxy])
+    l = threading.Thread(target=listen, args=["ipn:8.2", proxy])
     l.daemon = True
     l.start()
 
-    t = threading.Thread(target=sim_traffic, args=["8.1", proxy])
+    t = threading.Thread(target=sim_traffic, args=["ipn:8.1", proxy])
     t.daemon = True
     t.start()
         
