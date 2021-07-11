@@ -59,7 +59,8 @@ else
     sudo ldconfig
     echo -e "\e[32mFinished installing ION-DTN."
     echo -e "\e[39mPlease set the ION_HOME environment variable to:"
-    directory=pwd
+    directory=$(pwd)
+    echo $directory
     cd ..
 fi
 
@@ -67,7 +68,7 @@ echo -e "\e[39m==============="
 echo "Getting Python packages"
 echo "==============="
 echo " "
-sudo apt install autotools-dev automake python3-dev
+sudo apt install autotools-dev automake python3-dev python3-pip
 pip3 install apscheduler cbor2
 
 echo "Done."
