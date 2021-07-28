@@ -30,7 +30,7 @@ Each folder containing a scenario also contains the scripts needed to run the sc
 | run_framework<span>.</span>sh | Runs the framework. |
 | stop<span>.</span>sh | Stops ION and kills all processes associated with it. |
   
-When switching scenarios, it is important to change the ION_NODE_LIST_DIR environment variable as described above. Also all network namespaces have to be deleted using `sudo ipn -all netns delete`.
+When switching scenarios, it is important to change the ION_NODE_LIST_DIR environment variable as described above. Also all network namespaces have to be deleted using `sudo ip -all netns delete`.
     
 ## Running tests
 The "Tests" directory found in each scenario folder contains scripts for running the automated tests as described in the bachelors thesis.  These tests can be run via the terminal.
@@ -70,9 +70,9 @@ Jedes Szenarioverzeichnis enthält auch die Skripte, um das Szenario auszuführe
 | run_alt<span>.</span>sh | Führt ION Mit einer Konfiguration aus, die das Framework nicht benötigt. |
 | run_ion<span>.</span>sh | Führt ION Mit einer Konfiguration aus, die das Framework unbedingt benötigt. |
 | run_framework<span>.</span>sh | Führt das Framework aus. |
-| stop<span>.</span>sh | Stoppt ION beendet alle mit ihm assoziierten Prozesse. |
+| stop<span>.</span>sh | Stoppt ION und beendet alle mit ihm assoziierten Prozesse. |
   
-Wenn Sie ein anders Szenario ausführen möchten, ist es wichtig, dass Sie die ION_NODE_LIST_DIR Umgebungsvariable wie oben beschrieben anpassen. Außerdem müssen alle Network Namespaces mittels `sudo ipn -all netns delete` gelöscht werden.
+Wenn Sie ein anders Szenario ausführen möchten, ist es wichtig, dass Sie die ION_NODE_LIST_DIR Umgebungsvariable wie oben beschrieben anpassen. Außerdem müssen alle Network Namespaces mittels `sudo ip -all netns delete` gelöscht werden.
     
 ## Ausführen von Tests
 In jedem Szenarioverzeichnis befindet sich ein "Tests"-Ordner. Dieser enthält Skripts zum Ausführen der in der Bachelorarbeit beschriebenen automatisierten Tests. Diese können über die Konsole ausgeführt werden.
