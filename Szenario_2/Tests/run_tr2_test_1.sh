@@ -7,9 +7,9 @@ do
     cd "./$i/"
     konsole --hold -e "ip netns exec nns$i bpecho ipn:$i.2" &
     cd ..
-
+    sleep 0.1
 done
-sleep 0.5
+sleep 1
 for x in 4 8 10 21
 do
 
@@ -29,8 +29,9 @@ do
     	konsole --hold -e "ip netns exec nns21 bping -i 0.01 ipn:21.1 ipn:26.2" &
     fi
     cd ..
+    sleep 0.1
 done
-sleep 0.5
+sleep 2
 pwd
 cd "./1/"
 konsole --hold -e "ip netns exec nns1 bping -c 100 -i 1 ipn:1.1 ipn:29.2"
