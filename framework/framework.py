@@ -168,8 +168,8 @@ if __name__ == "__main__":
         except (FileNotFoundError, IsADirectoryError) as err:
             logger.error(f"{sys.argv[0]}: {args.config}: {err.strerror}")
             print(f"{sys.argv[0]}: {args.config}: {err.strerror}", file=sys.stderr)
-            exit(1)           
-            
+            exit(1)
+
     logger.info("Entering main event loop.")
-    wm = WorkerManager(nm, 15)
+    wm = WorkerManager(nm, 25)
     main(nm, wm)
