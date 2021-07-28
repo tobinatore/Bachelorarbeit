@@ -25,9 +25,6 @@ class NodeManager:
     # |      NODE VARS       |
     # ------------------------
     __node_num: str
-    __eid_send: str
-    __eid_recv: str
-    __is_flooder: bool
     __neighbours: List[str]
     __node_dir: str
 
@@ -59,19 +56,11 @@ class NodeManager:
         # Configuring the node
         self.__logger.info("Getting node config")
         self.__node_num = config["NODE_CONFIG"]["node_number"]
-        self.__eid_send = config["NODE_CONFIG"]["eid_send"]
-        self.__eid_recv = config["NODE_CONFIG"]["eid_receive"]
-        self.__is_flooder = config.getboolean("NODE_CONFIG", "is_flooder")
         self.__neighbours = config["NODE_CONFIG"]["neighbours"].split(",")
         self.__node_dir = config["NODE_CONFIG"]["node_dir"]
 
         # Logging results
         self.__logger.info("Node number: " + str(self.__node_num))
-        self.__logger.info("Sending from EID " + self.__eid_send)
-        self.__logger.info("Receiving critical info on EID " + self.__eid_recv)
-        self.__logger.info(
-            "Node is flooder: " + ("no" if not self.__is_flooder else "yes")
-        )
         self.__logger.info("Neighbours: " + str(self.__neighbours))
         self.__logger.info("Initialized proxy to ION engine.")
 
