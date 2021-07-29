@@ -20,6 +20,8 @@ Setup is kept as simple as possible by using the provided scripts in the Top-Lev
  15. Add `ION_NODE_LIST_DIR="/Path/to/Szenario_1"`or `ION_NODE_LIST_DIR="/Path/to/Szenario_2"`depending on which scenario you want to run. **This variable has to be changed every time when switching scenarios!**
  16. Restart your machine or run `source /etc/environment` to load the changes.
 
+There may occur an error on the first run of the framework stating that the psutil module is missing. In this case run `sudo pip3 install psutil` and it should disappear.
+
 ## Running a scenario
 Each folder containing a scenario also contains the scripts needed to run the scenario:
 
@@ -52,16 +54,19 @@ Die Installation ist  durch die Verwendung von Setup-Skripts so einfach wie mög
  4. Wenn das Skript fertig ausgeführt wurde, muss das ION-Installationsverzeichnis manuell zu der /etc/environment Datei hinzugefügt werden. Eine Anleitung dazu wird von dem install_dependencies Skript ausgegeben.
  5. Führen Sie `sudo ./install_pyion.sh` aus, um das pyion Package herunterzuladen und zu bauen. Dieses wird für die automatisierten Tests benötigt.
  6. Nach Schritt 5  sind alle benötigten Abhängigkeiten installiert. Nun muss noch die ION Umgebung konfiguriert werden. Die folgenden Schritte gelten dabei sowohl für den Ordner Szenario_1 als auch für den Ordner Szenario_2.
- 8. Führen Sie `cd Szenario_1` aus, um in den Ordner des ersten Szenarios zu wechseln.
- 9. Führen Sie `touch ion_nodes`  aus, um eine leere Datei anzulegen, welche ION für das Knotenmanagement nutzt.
- 10. Für jeden der Ordner 1 bis 9 (oder 1 bis 29 im Falles des 2. Szenarios) führen Sie die folgenden Schritte aus:
- 11. Wechseln Sie in den Ordern und öffnen Sie die "nX.ionconfig" Datei .
- 12. Bearbeiten Sie die Zeile, welche mit "pathName" beginnt, sodass sie den Pfad zu dem Ordner enthält. Beispielsweise könnte statt `/home/tobias/Desktop/Bachelorarbeit/Szenario_1/1` nun der Pfad `/home/User/Downloads/Bachelorarbeit/Szenario_1/1`dort stehen.
- 13. Wiederholen Sie den vorigen Schritt für die Datei "config_X.ini" und ändern Sie dort die Zeile die mit "node_dir" beginnt.
- 14. Wiederholen Sie die Schritte 7 - 11 für den Ordner des zweiten Szenarios.
- 15. Führen Sie `sudo gedit /etc/environment` aus, um eine weitere Umgebungsvariable hinzufügen zu können.
- 16. Fügen Sie`ION_NODE_LIST_DIR="/Path/to/Szenario_1"`oder `ION_NODE_LIST_DIR="/Path/to/Szenario_2"`in die Datei ein, je nachdem welches Szenario Sie ausführen möchten. **Diese Variable muss jedes Mal, wenn Sie das Szenario wechseln, geändert werden!**
- 17. Starten Sie Ihre Maschine neu, oder führen Sie `source /etc/environment` aus, um die Änderungen zu laden.
+ 7. Führen Sie `cd Szenario_1` aus, um in den Ordner des ersten Szenarios zu wechseln.
+ 8. Führen Sie `touch ion_nodes`  aus, um eine leere Datei anzulegen, welche ION für das Knotenmanagement nutzt.
+ 9. Für jeden der Ordner 1 bis 9 (oder 1 bis 29 im Falles des 2. Szenarios) führen Sie die folgenden Schritte aus:
+ 10. Wechseln Sie in den Ordern und öffnen Sie die "nX.ionconfig" Datei .
+ 11. Bearbeiten Sie die Zeile, welche mit "pathName" beginnt, sodass sie den Pfad zu dem Ordner enthält. Beispielsweise könnte statt `/home/tobias/Desktop/Bachelorarbeit/Szenario_1/1` nun der Pfad `/home/User/Downloads/Bachelorarbeit/Szenario_1/1`dort stehen.
+ 12. Wiederholen Sie den vorigen Schritt für die Datei "config_X.ini" und ändern Sie dort die Zeile die mit "node_dir" beginnt.
+ 13. Wiederholen Sie die Schritte 7 - 12 für den Ordner des zweiten Szenarios.
+ 14. Führen Sie `sudo gedit /etc/environment` aus, um eine weitere Umgebungsvariable hinzufügen zu können.
+ 15. Fügen Sie`ION_NODE_LIST_DIR="/Path/to/Szenario_1"`oder `ION_NODE_LIST_DIR="/Path/to/Szenario_2"`in die Datei ein, je nachdem welches Szenario Sie ausführen möchten. **Diese Variable muss jedes Mal, wenn Sie das Szenario wechseln, geändert werden!**
+ 16. Starten Sie Ihre Maschine neu, oder führen Sie `source /etc/environment` aus, um die Änderungen zu laden.
+
+Bei der ersten Ausführung zeigt dass Framework möglicherweise an, dass das Modul psutils fehlt. Dieser sollte nach Ausführung von `sudo pip3 install psutil` verschwinden.
+
 
 ## Ausführen eines Szenarios
 Jedes Szenarioverzeichnis enthält auch die Skripte, um das Szenario auszuführen.
