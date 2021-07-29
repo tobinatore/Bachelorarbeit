@@ -18,7 +18,7 @@ echo "======================="
 echo "Getting konsole"
 echo "======================="
 echo " "
-sudo apt install -y konsole keditbookmarks
+sudo apt install -y konsole keditbookmarks git
 
 echo "==============="
 echo "Setting up DTN"
@@ -69,7 +69,7 @@ echo "Getting Python packages"
 echo "==============="
 echo " "
 sudo apt install autotools-dev automake python3-dev python3-pip
-pip3 install apscheduler cbor2
+pip3 install apscheduler cbor2 psutil
 
 echo "Done."
 echo ""
